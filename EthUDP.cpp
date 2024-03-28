@@ -1,5 +1,7 @@
 #include "mbed.h"
 #include "EthUDP.h"
+#include "string.h"
+#include "cstring"
 
 EthUDP::EthUDP() {
     // Costruttore
@@ -42,8 +44,8 @@ nsapi_error_t EthUDP::initialize(const char* ip, const char* netmask, const char
     return status; // Restituisce 0 se tutto va bene
 }
 
-nsapi_size_or_error_t EthUDP::send(const char* data, SocketAddress sendAddr) {
-    nsapi_size_or_error_t result = socket.sendto(sendAddr, data, sizeof(data));
+nsapi_size_or_error_t EthUDP::send(const void* buffer, nsapi_size_t size, SocketAddress sendAddr) {
+    nsapi_size_or_error_t result = _socket.sendto(sendAddr, buffer, size);
 
     if (result < 0) {
         // Stampa un errore se l'invio non è riuscito
@@ -53,9 +55,9 @@ nsapi_size_or_error_t EthUDP::send(const char* data, SocketAddress sendAddr) {
     return result;
 }
 
-nsapi_size_or_error_t EthUDP::send(const char* data, nsapi_size_t size, const char* addr, uint16_t port) {
+nsapi_size_or_error_t EthUDP::send(const void* buffer, nsapi_size_t size, const char* addr, uint16_t port) {
     SocketAddress sendAddr(addr, port);
-    nsapi_size_or_error_t result = socket.sendto(sendAddr, data, sizeof(data));
+    nsapi_size_or_error_t result = _socket.sendto(sendAddr, buffer, size);
 
     if (result < 0) {
         // Stampa un errore se l'invio non è riuscito
@@ -72,9 +74,9 @@ set_timeout(-1) -> bloccante
 set_timeout(>0) -> tempo in ms
 */
 nsapi_size_or_error_t EthUDP::receive(char* buffer, nsapi_size_t size, uint32_t timeout) { //prendo il primo dato in coda senza discriminazioni ip
-    socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
+    _socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
     SocketAddress sender;
-    nsapi_size_or_error_t ret = socket.recvfrom(&sender, buffer, size); // Tenta di ricevere dati
+    nsapi_size_or_error_t ret = _socket.recvfrom(&sender, buffer, size); // Tenta di ricevere dati
     
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
@@ -101,9 +103,9 @@ nsapi_size_or_error_t EthUDP::receive(char* buffer, nsapi_size_t size, uint32_t 
 }
 
 nsapi_size_or_error_t EthUDP::receiveFrom(char* buffer, nsapi_size_t size, const char* sender_ip, int port, uint32_t timeout) { //ricevo da un indirizzo ip specifico
-    socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
+    _socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
     SocketAddress sender(sender_ip, port);
-    nsapi_size_or_error_t ret = socket.recvfrom(&sender, buffer, size); // Tenta di ricevere dati
+    nsapi_size_or_error_t ret = _socket.recvfrom(&sender, buffer, size); // Tenta di ricevere dati
     
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
@@ -130,12 +132,12 @@ nsapi_size_or_error_t EthUDP::receiveFrom(char* buffer, nsapi_size_t size, const
 }
 
 nsapi_size_or_error_t EthUDP::receiveFrom(char* buffer, nsapi_size_t size, SocketAddress sender_addr, uint32_t timeout) { //ricevo da un indirizzo ip specifico
-    socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
-    nsapi_size_or_error_t ret = socket.recvfrom(&sender_addr, buffer, size); // Tenta di ricevere dati
+    _socket.set_timeout(timeout); // Imposta il timeout per le operazioni di socket
+    nsapi_size_or_error_t ret = _socket.recvfrom(&sender_addr, buffer, size); // Tenta di ricevere dati
     
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
-        printf("Dati ricevuti da: %s\n", sender.get_ip_address());
+        printf("Dati ricevuti da: %s\n", sender_addr.get_ip_address());
         return ret; // Restituisce il numero di byte ricevuti
     } else {
         // Gestione degli errori in base al codice di ritorno
