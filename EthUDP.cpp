@@ -14,6 +14,10 @@ EthUDP::~EthUDP() {
 }
 
 nsapi_error_t EthUDP::initialize(const char* ip, const char* netmask, const char* gateway, int port) {
+    if (_isInitialized) {
+        printf("Ethernet e socket già inizializzati.\n");
+        return NSAPI_ERROR_ALREADY; // Restituisce un errore specifico se già inizializzato
+    }
     
     _eth.set_network(ip, netmask, gateway);
 
@@ -41,8 +45,10 @@ nsapi_error_t EthUDP::initialize(const char* ip, const char* netmask, const char
         printf("Socket legato alla porta %d con successo.\n", port);
     }
 
+    _isInitialized = true; // Imposta il flag di stato a true dopo una inizializzazione riuscita
     return status; // Restituisce 0 se tutto va bene
 }
+
 
 nsapi_size_or_error_t EthUDP::send(const void* buffer, nsapi_size_t size, SocketAddress sendAddr) {
     nsapi_size_or_error_t result = _socket.sendto(sendAddr, buffer, size);
@@ -81,6 +87,7 @@ nsapi_size_or_error_t EthUDP::receive(char* buffer, nsapi_size_t size, uint32_t 
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
         printf("Dati ricevuti da: %s\n", sender.get_ip_address());
+        buffer[ret] = '\0';
         return ret; // Restituisce il numero di byte ricevuti
     } else {
         // Gestione degli errori in base al codice di ritorno
@@ -110,6 +117,7 @@ nsapi_size_or_error_t EthUDP::receiveFrom(char* buffer, nsapi_size_t size, const
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
         printf("Dati ricevuti da: %s\n", sender.get_ip_address());
+        buffer[ret] = '\0';
         return ret; // Restituisce il numero di byte ricevuti
     } else {
         // Gestione degli errori in base al codice di ritorno
@@ -138,6 +146,7 @@ nsapi_size_or_error_t EthUDP::receiveFrom(char* buffer, nsapi_size_t size, Socke
     if (ret >= 0) {
         // Se abbiamo ricevuto dei dati, stampiamo l'indirizzo del mittente
         printf("Dati ricevuti da: %s\n", sender_addr.get_ip_address());
+        buffer[ret] = '\0';
         return ret; // Restituisce il numero di byte ricevuti
     } else {
         // Gestione degli errori in base al codice di ritorno
