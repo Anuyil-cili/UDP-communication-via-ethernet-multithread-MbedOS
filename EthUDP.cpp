@@ -14,13 +14,8 @@ EthUDP::~EthUDP() {
 }
 
 nsapi_error_t EthUDP::initialize(const char* ip, const char* netmask, const char* gateway, int port) {
-    if (_isInitialized) {
-        printf("Ethernet e socket già inizializzati.\n");
-        return NSAPI_ERROR_ALREADY; // Restituisce un errore specifico se già inizializzato
-    }
-    
     _eth.set_network(ip, netmask, gateway);
-
+    
     nsapi_error_t status = _eth.connect();
     if (status != 0) {
         printf("Errore nella connessione Ethernet: %d\n", status);
@@ -45,7 +40,6 @@ nsapi_error_t EthUDP::initialize(const char* ip, const char* netmask, const char
         printf("Socket legato alla porta %d con successo.\n", port);
     }
 
-    _isInitialized = true; // Imposta il flag di stato a true dopo una inizializzazione riuscita
     return status; // Restituisce 0 se tutto va bene
 }
 
