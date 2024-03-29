@@ -1,0 +1,11 @@
+{
+    "name": "EthUDP",
+    "config": {
+        // Eventuali parametri di configurazione globale
+    },
+    "target_overrides": {
+        "*": {
+            // Sovrascritture di configurazione per target specifici
+        }
+    }
+}
